@@ -1,5 +1,8 @@
 package il.co.nnz.myplaces;
 
+import android.content.SharedPreferences;
+import android.location.Location;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -18,8 +21,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+
+public class MainActivity extends AppCompatActivity implements SearchFragment.goToMapListener{
+
+    private PlaceDBhelper helper = new PlaceDBhelper(this);
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -30,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     private SectionsPagerAdapter mSectionsPagerAdapter;
+    //GoogleMap map = SupportMapFragment.GetMapAsync
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -51,9 +61,11 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
+        /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,6 +74,12 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+        */
+
+        //take the name entered in settings and Toast it
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        String name = sp.getString("edit_text", "no name");
+        Toast.makeText(MainActivity.this, "Hi " + name , Toast.LENGTH_SHORT).show();
 
     }
 
@@ -75,18 +93,34 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+       switch (item.getItemId()){
+           case R.id.action_delete_last_search:
+               helper.deletePlacesAroundMeTable();
+               //connect adapter here
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+               break;
+
+           case R.id.action_settings:
+               getFragmentManager().beginTransaction()
+                       .replace(R.id.container, new SettingsFragment())
+                       .addToBackStack("settings")
+                       .commit();
+               break;
+
+           case R.id.action_exit:
+               finish();
+               break;
+       }
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void goToMapFragment(int position) {
+        mViewPager.setCurrentItem(position);
+    }
+
+
 
     /**
      * A placeholder fragment containing a simple view.
@@ -139,11 +173,11 @@ public class MainActivity extends AppCompatActivity {
             // Return a PlaceholderFragment (defined as a static inner class below).
             switch (position) {
                 case 0:
-                    return new SearchFragment();
+                    return new FavoritesFragment();
                 case 1:
                     return new SearchFragment();
                 case 2:
-                    return new SearchFragment();
+                    return new SupportMapFragment();
                 default:
                     return null;
             }
@@ -168,4 +202,5 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
     }
+
 }

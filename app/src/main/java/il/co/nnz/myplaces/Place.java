@@ -5,21 +5,58 @@ package il.co.nnz.myplaces;
  */
 public class Place {
 
-    String name, address;
-    double distance;
-    int image;
+    private String placeID, name, address, lat, lng;
+    private int image;
+    private long id;
 
-    public Place(String name, String address, double distance) {
+    public Place(long id, String placeID, String name, String address, String lat, String lng, int image) {
+        this.id= id;
+        this.placeID = placeID;
         this.name = name;
         this.address = address;
-        this.distance = distance;
+        this.lat = lat;
+        this.lng = lng;
+        this.image = image;
     }
 
-    public Place(String name, String address, double distance, int image) {
+    public Place(long id, String placeID, String name, String address, String lat, String lng) {
+        this.id= id;
+        this.placeID = placeID;
+        this.lng = lng;
+        this.lat = lat;
+        this.address = address;
+        this.name = name;
+    }
+
+    public Place( String placeID, String name, String address, String lat, String lng) {
+        this.placeID = placeID;
+        this.lng = lng;
+        this.lat = lat;
+        this.address = address;
+        this.name = name;
+    }
+
+    public Place(long id, String name) {
+        this.id= id;
+        this.name = name;
+    }
+
+    public Place(String name) {
+        this.name = name;
+    }
+
+    public Place(long id, String name, String address) {
+        this.id= id;
         this.name = name;
         this.address = address;
-        this.distance = distance;
-        this.image = image;
+    }
+
+    public String getPlaceID() {
+        return placeID;
+    }
+
+    public void setPlaceID(String placeID) {
+        this.placeID = placeID;
     }
 
     public String getName() {
@@ -38,12 +75,20 @@ public class Place {
         this.address = address;
     }
 
-    public double getDistance() {
-        return distance;
+    public String getLat() {
+        return lat;
     }
 
-    public void setDistance(double distance) {
-        this.distance = distance;
+    public void setLat(String lat) {
+        this.lat = lat;
+    }
+
+    public String getLng() {
+        return lng;
+    }
+
+    public void setLng(String lng) {
+        this.lng = lng;
     }
 
     public int getImage() {

@@ -1,13 +1,39 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="il.co.nnz.myplaces.SearchFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true">
 
-</FrameLayout>
+        <SearchView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:id="@+id/placeSearchView"
+            android:layout_gravity="center_horizontal"
+            android:queryHint="@string/search_place" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/search_around"
+            android:id="@+id/searchAroundBtn"
+            android:layout_gravity="center_horizontal" />
+
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/searchPlacesRecyclerView"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="5dp" />
+
+    </LinearLayout>
+
+
+</RelativeLayout>
