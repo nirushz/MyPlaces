@@ -28,6 +28,14 @@ public class Place {
         this.name = name;
     }
 
+    public Place(long id, String name, String address, String lat, String lng) {
+        this.id = id;
+        this.name = name;
+        this.address = address;
+        this.lng = lng;
+        this.lat = lat;
+    }
+
     public Place( String placeID, String name, String address, String lat, String lng) {
         this.placeID = placeID;
         this.lng = lng;
@@ -98,4 +106,7 @@ public class Place {
     public void setImage(int image) {
         this.image = image;
     }
+
+
+    public long getId() { return id; }
 }

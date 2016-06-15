@@ -7,7 +7,6 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -25,10 +24,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -41,8 +37,9 @@ import java.util.ArrayList;
  */
 public class SearchFragment extends Fragment implements View.OnClickListener, LocationListener, SearchView.OnQueryTextListener {
 
-    // 2> declare a variable of type OnNameListener (our interface)
-    private goToMapListener listener;
+    //interface 2> declare a variable of type OnNameListener (our interface)
+    private goToMapListener mapListener;
+    private goToFavoritesListener fragmentListener;
 
     final static String API_KEY ="AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w";
     private String myPlaceUrl;
@@ -218,8 +215,6 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
             //helper = new PlaceDBhelper(context);
         }
 
-
-
         // 10> what to do when creating a new ViewHolder for a new item
         @Override
         public PlaceAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -278,11 +273,16 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
             @Override
             public void onClick(View v) {
 
-                Place place = places.get(getAdapterPosition());
+                Place onClickPlace = places.get(getAdapterPosition());
+                LatLng placeLocation = null;
+                //String lat = onClickPlace.getLat();
+                //Log.d("lat-string:", lat);
+                double lat =Double.parseDouble(onClickPlace.getLat());
+                double lng =Double.parseDouble(onClickPlace.getLng());
+                placeLocation = new LatLng(lat,lng) ;
 
-                Toast.makeText(getContext(), "item pressed", Toast.LENGTH_SHORT).show();
-                // 4> run the method
-                listener.goToMapFragment(2);
+                //interface 4> run the method
+                mapListener.goToMapFragment(2, onClickPlace);
 
 
             }
@@ -320,24 +320,34 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
                 //broadcast reciever announcing end of insertion to DB
                 // onRecieve do clear adapter and set adapter
                 Intent broadcastIntent = new Intent(ACTION_ADD_TO_FAVORITES);
+
                 LocalBroadcastManager.getInstance(getContext()).sendBroadcast(broadcastIntent);
-                listener.goToMapFragment(0);
+
+                fragmentListener.goToFavoritesFragment(0);
                 break;
         }
         return super.onContextItemSelected(item);
     }
 
-    // 1> create an interface with the method/s
+    //interface 1> create an interface with the method/s
     public interface goToMapListener{
-       void goToMapFragment (int position);
+       void goToMapFragment (int position, Place place);
+
     }
 
-    // 3> attach the interface variable to the host activity
+    //interface 3> attach the interface variable to the host activity
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        listener = (goToMapListener) context;
+        mapListener = (goToMapListener) context;
+        fragmentListener = (goToFavoritesListener) context;
     }
+
+
+    public interface goToFavoritesListener{
+        void goToFavoritesFragment (int position);
+    }
+
 }
 

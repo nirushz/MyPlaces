@@ -78,13 +78,15 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
         ArrayList<Place> places = new ArrayList<>();
 
         SQLiteDatabase db = getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT "+ID_KEY+", "+NAME_KEY+", "+ADDRESS_KEY+" FROM " +SEARCH_TABLE_KEY, null);
+        Cursor c = db.rawQuery("SELECT * FROM " +SEARCH_TABLE_KEY, null);
         while (c.moveToNext())
         {
             long id = c.getLong(c.getColumnIndex(ID_KEY));
             String name = c.getString(c.getColumnIndex(NAME_KEY));
             String address = c.getString(c.getColumnIndex(ADDRESS_KEY));
-            Place temp = new Place(id, name, address);
+            String lat = c.getString(c.getColumnIndex(LAT_KEY));
+            String lng = c.getString(c.getColumnIndex(LNG_KEY));
+            Place temp = new Place(id, name, address, lat, lng);
             places.add(temp);
         }
         db.close();
@@ -132,6 +134,11 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
         }
         db.close();
         return places;
+    }
 
+    public void deletePlace(long itemId) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(FAVORITES_TABLE_KEY, F_ID_KEY+"= "+itemId ,null);
+        db.close();
     }
 }

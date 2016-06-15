@@ -23,10 +23,15 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends AppCompatActivity implements SearchFragment.goToMapListener{
+public class MainActivity extends AppCompatActivity implements SearchFragment.goToMapListener, SearchFragment.goToFavoritesListener, OnMapReadyCallback {
 
     private PlaceDBhelper helper = new PlaceDBhelper(this);
 
@@ -45,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+    private GoogleMap map;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
        switch (item.getItemId()){
            case R.id.action_delete_last_search:
                helper.deletePlacesAroundMeTable();
-               //connect adapter here
+               //connect adapter here - i can use the existing broadcast receiver
 
                break;
 
@@ -105,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
                        .replace(R.id.container, new SettingsFragment())
                        .addToBackStack("settings")
                        .commit();
+               //mViewPager.setCurrentItem(R.xml.settings);
                break;
 
            case R.id.action_exit:
@@ -115,11 +122,33 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
         return super.onOptionsItemSelected(item);
     }
 
+
+
     @Override
-    public void goToMapFragment(int position) {
+    public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;
+    }
+
+    @Override
+    public void goToFavoritesFragment(int position) {
         mViewPager.setCurrentItem(position);
     }
 
+    @Override
+    public void goToMapFragment(int position, Place place) {
+
+        //map.clear();
+        LatLng placeLocation = null;
+        double lat =Double.parseDouble(place.getLat());
+        double lng =Double.parseDouble(place.getLng());
+        placeLocation = new LatLng(lat,lng) ;
+
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(placeLocation, 15));
+        map.addMarker(new MarkerOptions().position(placeLocation).title(place.getName()).alpha(0.6f));
+
+        mViewPager.setCurrentItem(position);
+
+    }
 
 
     /**
@@ -177,7 +206,9 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
                 case 1:
                     return new SearchFragment();
                 case 2:
-                    return new SupportMapFragment();
+                    SupportMapFragment frag = new SupportMapFragment();
+                    frag.getMapAsync(MainActivity.this);
+                    return frag;
                 default:
                     return null;
             }

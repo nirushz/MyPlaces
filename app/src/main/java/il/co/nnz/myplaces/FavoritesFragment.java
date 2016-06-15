@@ -3,11 +3,13 @@ package il.co.nnz.myplaces;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
@@ -16,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -28,6 +31,8 @@ public class FavoritesFragment extends Fragment {
     FavoritesAdapter adapter;
     RecyclerView favoritesRecyclerView;
     PlaceDBhelper helper;
+
+    Place onLongClickPlace;
 
     public FavoritesFragment() {
         // Required empty public constructor
@@ -100,11 +105,13 @@ public class FavoritesFragment extends Fragment {
 
         // 3> create ViewHolder class
         // 5> create the item layout xml file
-        public class FavoritesViewHolder extends RecyclerView.ViewHolder {
+        public class FavoritesViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
 
             // 6> define the views in the holder
             private TextView textName, textAddress, textDistane;
             private ImageView imagePlace;
+            //PlaceDBhelper helper;
+
 
             // 4> add ctor
             public FavoritesViewHolder(View itemView) {
@@ -112,6 +119,8 @@ public class FavoritesFragment extends Fragment {
                 textName = (TextView) itemView.findViewById(R.id.textName);
                 textAddress = (TextView) itemView.findViewById(R.id.textAddress);
                 textDistane = (TextView) itemView.findViewById(R.id.textDistance);
+
+                itemView.setOnLongClickListener(this);
             }
 
                 // 7> create the binding method
@@ -120,6 +129,35 @@ public class FavoritesFragment extends Fragment {
                 textAddress.setText(place.getAddress());
                 textDistane.setText("5Km");  //NEED TO FIX IT
 
+            }
+
+            @Override
+            public boolean onLongClick(View v) {
+
+                onLongClickPlace = places.get(getAdapterPosition());
+                helper = new PlaceDBhelper(getContext());
+
+
+                AlertDialog deleteDialog = new AlertDialog.Builder(getContext()).create();
+                deleteDialog.setMessage("Delete "+onLongClickPlace.getName()+"?");
+                deleteDialog.setButton(deleteDialog.BUTTON_POSITIVE, "DELETE", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        long itemId = onLongClickPlace.getId();
+                        helper.deletePlace(itemId);
+                        adapter = new FavoritesAdapter(getContext(), helper.getFavoritePlaces());
+                        favoritesRecyclerView.setAdapter(adapter);
+                    }
+                });
+                deleteDialog.setButton(deleteDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                deleteDialog.show();
+
+                return false;
             }
         }
 
