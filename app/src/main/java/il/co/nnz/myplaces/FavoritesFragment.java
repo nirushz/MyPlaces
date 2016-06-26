@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
@@ -19,6 +21,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
@@ -34,6 +38,8 @@ public class FavoritesFragment extends Fragment {
 
     Place onLongClickPlace;
 
+    SharedPreferences sp;
+
     public FavoritesFragment() {
         // Required empty public constructor
     }
@@ -45,11 +51,19 @@ public class FavoritesFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.fragment_favorites, container, false);
 
+        sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         favoritesRecyclerView = (RecyclerView) v.findViewById(R.id.favoritesRecyclerView);
         favoritesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         helper = new PlaceDBhelper(getContext());
+
+        String deleteFavorites = (sp.getString("delete_favorites_values", "no")).toString();
+        if (deleteFavorites.equals("yes")){
+            helper.deleteFavorites();
+            adapter = new FavoritesAdapter(getContext(), helper.getFavoritePlaces());
+            favoritesRecyclerView.setAdapter(adapter);
+        }
 
         if (helper.getFavoritePlaces()!=null) {
             adapter = new FavoritesAdapter(getContext(), helper.getFavoritePlaces());
@@ -105,7 +119,7 @@ public class FavoritesFragment extends Fragment {
 
         // 3> create ViewHolder class
         // 5> create the item layout xml file
-        public class FavoritesViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
+        public class FavoritesViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener, View.OnClickListener {
 
             // 6> define the views in the holder
             private TextView textName, textAddress, textDistane;
@@ -120,6 +134,7 @@ public class FavoritesFragment extends Fragment {
                 textAddress = (TextView) itemView.findViewById(R.id.textAddress);
                 textDistane = (TextView) itemView.findViewById(R.id.textDistance);
 
+                itemView.setOnClickListener(this);
                 itemView.setOnLongClickListener(this);
             }
 
@@ -128,6 +143,21 @@ public class FavoritesFragment extends Fragment {
                 textName.setText(place.getName());
                 textAddress.setText(place.getAddress());
                 textDistane.setText("5Km");  //NEED TO FIX IT
+
+            }
+
+            @Override
+            public void onClick(View v) {
+
+                Place onClickPlace = places.get(getAdapterPosition());
+                /*
+                LatLng placeLocation = null;
+                double lat =Double.parseDouble(onClickPlace.getLat());
+                double lng =Double.parseDouble(onClickPlace.getLng());
+                placeLocation = new LatLng(lat,lng) ;
+                */
+
+                SearchFragment.mapListener.goToMapFragment(2, onClickPlace);
 
             }
 
@@ -159,14 +189,13 @@ public class FavoritesFragment extends Fragment {
 
                 return false;
             }
+
         }
 
     }
 
     //BroadcastReceiver inner class
     private class FavoritesReceiver extends BroadcastReceiver {
-
-
         @Override
         public void onReceive(Context context, Intent intent) {
             adapter = new FavoritesAdapter(getContext(),helper.getFavoritePlaces() );

@@ -20,6 +20,18 @@
 
     <string name="start_searching">Searching the best places for you...</string>
 
+    <string-array name="km_mile">
+        <item>Km</item>
+        <item>Mile</item>
+    </string-array>
+
+    <string-array name="delete_favorites">
+        <item>Are you sure?</item>
+    </string-array>
+
+    <string-array name="delete_favorites_values">
+        <item>yes</item>
+    </string-array>
 
 
     <!-- TODO: Remove or change this placeholder text -->

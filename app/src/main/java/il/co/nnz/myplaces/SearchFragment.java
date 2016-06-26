@@ -1,13 +1,18 @@
 package il.co.nnz.myplaces;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,7 +29,10 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -38,15 +46,16 @@ import java.util.ArrayList;
 public class SearchFragment extends Fragment implements View.OnClickListener, LocationListener, SearchView.OnQueryTextListener {
 
     //interface 2> declare a variable of type OnNameListener (our interface)
-    private goToMapListener mapListener;
+    public static goToMapListener mapListener;  //****its OK???? ***
     private goToFavoritesListener fragmentListener;
 
-    final static String API_KEY ="AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w";
+    final static String API_KEY = "AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w";
     private String myPlaceUrl;
     private double mylat;
     private double mylng;
-    private int radius=500;
-    private String name =null;
+
+    private String name = null;
+    private boolean wasSearch=false;
 
     private LocationManager locationManager;
     String provider;
@@ -57,7 +66,11 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
 
     Place onLongClickplace;
 
+    int radius;
+    SharedPreferences sp;
+
     public static final String ACTION_ADD_TO_FAVORITES = "il.co.nnz.myplaces.ACTION_ADD_TO_FAVORITES";
+
 
     public SearchFragment() {
         // Required empty public constructor
@@ -70,20 +83,15 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
         View v = inflater.inflate(R.layout.fragment_search, container, false);
 
 
-        /*
-        ArrayList<Place> searchedPlaces = new ArrayList<>();
-        Place p1 = new Place("4446656","home", "amoraim 7 Yavne", "32.1","34.8" );
-        Place p2 = new Place("4446656","home", "amoraim 7 Yavne", "32.1","34.8" );
-        searchedPlaces.add(p1);
-        searchedPlaces.add(p2);
-        */
+        sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        //radius = Integer.parseInt(sp.getString("edit_radius", "500"));
 
         searchPlacesRecyclerView = (RecyclerView) v.findViewById(R.id.searchPlacesRecyclerView);
         searchPlacesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         helper = new PlaceDBhelper(getContext());
 
-        if (helper.getAroundMePlaces()!=null) {
+        if (helper.getAroundMePlaces() != null) {
             adapter = new PlaceAdapter(getContext(), helper.getAroundMePlaces());
             searchPlacesRecyclerView.setAdapter(adapter);
         }
@@ -108,6 +116,12 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
         // 2> Decide on the provider
         provider = locationManager.NETWORK_PROVIDER;
 
+        try {
+            locationManager.requestLocationUpdates(provider, 1000, 5, this);
+        } catch (SecurityException e) {
+            Toast.makeText(getContext(), "You do not have permission to get location", Toast.LENGTH_SHORT).show();
+        }
+
         return v;
     }
 
@@ -120,13 +134,13 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
             e.printStackTrace();
         }
 
-        name=query;
+        name = query;
+        wasSearch=true;
 
-        Toast.makeText(getContext(), "name: "+name, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "name: " + name, Toast.LENGTH_SHORT).show();
         try {
             locationManager.requestLocationUpdates(provider, 1000, 5, this);
-        }
-        catch (SecurityException e){
+        } catch (SecurityException e) {
             Toast.makeText(getContext(), "You do not have permission to get location", Toast.LENGTH_SHORT).show();
         }
 
@@ -134,16 +148,19 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
     }
 
     @Override
-    public boolean onQueryTextChange(String newText) { return false; }
+    public boolean onQueryTextChange(String newText) {
+        return false;
+    }
 
 
     @Override
     public void onClick(View v) {
 
+        wasSearch=true;
+
         try {
             locationManager.requestLocationUpdates(provider, 1000, 5, this);
-        }
-        catch (SecurityException e){
+        } catch (SecurityException e) {
             Toast.makeText(getContext(), "You do not have permission to get location", Toast.LENGTH_SHORT).show();
         }
     }
@@ -154,46 +171,52 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
 
         mylat = location.getLatitude();
         mylng = location.getLongitude();
-        Log.d("myOwnPlace lat-mylng",mylat+","+mylng);
+        Log.d("myOwnPlace lat-mylng", mylat + "," + mylng);
 
         //stop listening to location changes
         try {
             locationManager.removeUpdates(this);
+        } catch (SecurityException e) {
         }
-        catch (SecurityException e) {}
 
 
-        if (name==null) {
-            myPlaceUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + mylat + "," + mylng + "&radius=" + radius + "&key=AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w";
-        } else {
-            myPlaceUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + mylat + "," + mylng + "&radius=" + radius + "&name=" + name + "&key=AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w";
+        radius = Integer.parseInt(sp.getString("edit_radius", "500"));
+
+        if (wasSearch) {
+
+            if (name == null) {
+                myPlaceUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + mylat + "," + mylng + "&radius=" + radius + "&key=AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w";
+            } else {
+                myPlaceUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + mylat + "," + mylng + "&radius=" + radius + "&name=" + name + "&key=AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w";
+            }
+            Log.d("myOwnPlace Url: ", myPlaceUrl);
+            Intent in = new Intent(getContext(), SearchIntentServise.class);
+            in.putExtra("myPlaceUrl", myPlaceUrl);
+            getContext().startService(in);
+            Toast.makeText(getContext(), getString(R.string.start_searching), Toast.LENGTH_SHORT).show();
         }
-        Log.d("myOwnPlace Url: ", myPlaceUrl);
-        Intent in = new Intent(getContext(), SearchIntentServise.class);
-        in.putExtra("myPlaceUrl", myPlaceUrl);
-        getContext().startService(in);
-        Toast.makeText(getContext(), getString(R.string.start_searching), Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) { }
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+    }
 
     @Override
-    public void onProviderEnabled(String provider) {  }
+    public void onProviderEnabled(String provider) {
+    }
 
     @Override
-    public void onProviderDisabled(String provider) { }
-
-
+    public void onProviderDisabled(String provider) {
+    }
 
 
     //BroadcastReceiver inner class
-    public class SearchAroundMeReceiver extends BroadcastReceiver{
+    public class SearchAroundMeReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            adapter = new PlaceAdapter(getContext(),helper.getAroundMePlaces() );
+            adapter = new PlaceAdapter(getContext(), helper.getAroundMePlaces());
             searchPlacesRecyclerView.setAdapter(adapter);
         }
     }
@@ -209,7 +232,7 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
         private Context context;
 
         // 9> ctor that gets data
-        public PlaceAdapter(Context context, ArrayList<Place> places){
+        public PlaceAdapter(Context context, ArrayList<Place> places) {
             this.places = places;
             this.context = context;
             //helper = new PlaceDBhelper(context);
@@ -220,7 +243,7 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
         public PlaceAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(context);
             View v = inflater.inflate(R.layout.place_item, parent, false);
-            return new  MyViewHolder(v);
+            return new MyViewHolder(v);
         }
 
         // 11> what to do when binding data (Place) to an item
@@ -242,7 +265,7 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
 
             // 6> define the views in the holder
             private TextView textName, textAddress, textDistane;
-            private ImageView imagePlace;
+            private ImageView categoryImage;
 
             // 4> add ctor
             public MyViewHolder(View itemView) {
@@ -250,39 +273,51 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
                 textName = (TextView) itemView.findViewById(R.id.textName);
                 textAddress = (TextView) itemView.findViewById(R.id.textAddress);
                 textDistane = (TextView) itemView.findViewById(R.id.textDistance);
+                categoryImage = (ImageView) itemView.findViewById(R.id.categoryImage);
 
                 itemView.setOnClickListener(this);
                 itemView.setOnLongClickListener(this);
             }
 
             // 7> create the binding method
-            public void bindPlace (Place place){
+            public void bindPlace(Place place) {
                 textName.setText(place.getName());
                 textAddress.setText(place.getAddress());
+                Log.d("icon",place.getIcon() );
+                Picasso.with(getContext()).load(place.getIcon()).into(categoryImage);
+
                 float[] result = new float[1];
-                //mylng = LocationServices.FusedLocationApi.getLastLocation();
-                //Location.distanceBetween(Double.parseDouble(place.getLat()), Double.parseDouble(place.getLng()),32.1460, 34.8510, result);
-                Location.distanceBetween(32.1465, 34.8519, 32.1460, 34.8510, result);
-                float distance = result[0];
-                distance = distance/1000;
-                distance = Float.parseFloat(new DecimalFormat("#.##").format(distance));
-                String dis = String.valueOf(distance);
-                textDistane.setText(dis+"Km");  //NEED TO FIX IT
+
+                if (mylat>0 && mylng>0) {
+                    Location.distanceBetween(Double.parseDouble(place.getLat()), Double.parseDouble(place.getLng()), mylat, mylng, result);
+
+                    //Location.distanceBetween(32.1465, 34.8519, 32.1460, 34.8510, result);
+                    float distance = result[0];
+                    distance = distance / 1000;
+                    distance = Float.parseFloat(new DecimalFormat("#.##").format(distance));
+                    String dis = String.valueOf(distance);
+                    textDistane.setText(dis+"Km");  //NEED TO FIX IT
+                } else {
+                    textDistane.setText("Calculating distanse...");  //NEED TO FIX IT
+                }
+
             }
 
             @Override
             public void onClick(View v) {
 
                 Place onClickPlace = places.get(getAdapterPosition());
+                /*
                 LatLng placeLocation = null;
-                //String lat = onClickPlace.getLat();
-                //Log.d("lat-string:", lat);
                 double lat =Double.parseDouble(onClickPlace.getLat());
                 double lng =Double.parseDouble(onClickPlace.getLng());
                 placeLocation = new LatLng(lat,lng) ;
+                */
+
 
                 //interface 4> run the method
                 mapListener.goToMapFragment(2, onClickPlace);
+
 
 
             }

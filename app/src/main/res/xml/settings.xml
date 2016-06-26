@@ -1,22 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <CheckBoxPreference
-        android:key="check"
-        android:title="select check"
-        android:summary="please select"
-        />
 
-    <SwitchPreference
-        android:key="switch"
-        android:title="select Km/Mile on/of"
-        android:summary="please switch"
-        />
+    <PreferenceCategory android:title="@string/action_settings" android:icon="@mipmap/ic_launcher">
 
     <EditTextPreference
 
-        android:key="edit_text"
-        android:title="Enter your name"
+        android:key="edit_radius"
+        android:title="Enter the search radius"
         />
+
+        <ListPreference
+            android:entries="@array/km_mile"
+            android:entryValues="@array/km_mile"
+            android:key="km_mile_list"
+            android:title="Set radius in Km or Miles"
+            />
+
+        <MultiSelectListPreference
+            android:entries="@array/delete_favorites"
+            android:entryValues="@array/delete_favorites_values"
+            android:key="delete_favorites"
+            android:title="Delete all favorites?"
+            />
+
+
+    </PreferenceCategory>
+
+
 
 
 

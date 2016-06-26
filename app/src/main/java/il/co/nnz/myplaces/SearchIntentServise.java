@@ -56,12 +56,18 @@ public class SearchIntentServise extends IntentService {
                 for (int i=0; i<placesNearMeArray.length(); i++)
                 {
                     JSONObject place = placesNearMeArray.getJSONObject(i);
-                    String placeID = place.getString("id");
+                    String placeID = place.getString("place_id");
                     Log.d("place ID: ", placeID);
+
+                    //get phone from here:
+                    //https://maps.googleapis.com/maps/api/place/details/json?placeid=ChIJs32SQXq6AhURLB2X0KBrt-Q&key=AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w
+
                     String name = place.getString("name");
                     Log.d("place name: ", name);
                     String address = place.getString("vicinity");
                     Log.d("place addrees", address);
+                    String icon = place.getString("icon");
+                    Log.d("place icon", icon);
                     //get the location lat&lng
                     JSONObject geometry = place.getJSONObject("geometry");
                     JSONObject location = geometry.getJSONObject("location");
@@ -77,10 +83,18 @@ public class SearchIntentServise extends IntentService {
                         Log.d("photoReference: ", photoReference);
                     }
 
-                    //insertion to DB
-                    Place temp = new Place(placeID, name, address, lat, lng);
-                    helper.insertPlace(temp);
-                    //Toast.makeText(getApplicationContext(), name + " was added", Toast.LENGTH_SHORT).show();
+                    //taking out places of type "locality"
+                    JSONArray types = place.getJSONArray("types");
+                    String locality =types.getString(0);
+                    Log.d("types: ", locality);
+
+
+                    //insertion to DB, if not locality type
+                    if (!locality.equals("locality")) {
+                        Log.d("place-params", placeID + "," + name + "," + address + "," + lat + "," + lng+","+ icon);
+                        Place temp = new Place(placeID, name, address, lat, lng, icon);
+                        helper.insertPlace(temp);
+                    }
 
                 }
 
@@ -92,12 +106,14 @@ public class SearchIntentServise extends IntentService {
             }
 
 
+
+
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            Toast.makeText(SearchIntentServise.this, "MalformedURLException", Toast.LENGTH_LONG).show();
         } catch (IOException e) {
-            e.printStackTrace();
+            Toast.makeText(SearchIntentServise.this, "IOException", Toast.LENGTH_LONG).show();
         } catch (JSONException e) {
-            e.printStackTrace();
+            Toast.makeText(SearchIntentServise.this, "JSONException", Toast.LENGTH_LONG).show();
         }
     }
 }

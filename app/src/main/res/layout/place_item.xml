@@ -8,7 +8,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/view"
-        android:translationZ="10dp">
+        android:translationZ="10dp"
+        android:background="@drawable/whitey">
 
     <TextView
         android:layout_width="wrap_content"
@@ -46,9 +47,9 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/imagePlace"
+            android:id="@+id/categoryImage"
             android:layout_gravity="right"
-            android:minHeight="70dp"
+            android:minHeight="71dp"
             android:minWidth="70dp"
             android:layout_margin="7dp"
             />

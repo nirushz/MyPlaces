@@ -5,28 +5,11 @@ package il.co.nnz.myplaces;
  */
 public class Place {
 
-    private String placeID, name, address, lat, lng;
+    private String placeID, name, address, lat, lng, icon;
     private int image;
     private long id;
 
-    public Place(long id, String placeID, String name, String address, String lat, String lng, int image) {
-        this.id= id;
-        this.placeID = placeID;
-        this.name = name;
-        this.address = address;
-        this.lat = lat;
-        this.lng = lng;
-        this.image = image;
-    }
 
-    public Place(long id, String placeID, String name, String address, String lat, String lng) {
-        this.id= id;
-        this.placeID = placeID;
-        this.lng = lng;
-        this.lat = lat;
-        this.address = address;
-        this.name = name;
-    }
 
     public Place(long id, String name, String address, String lat, String lng) {
         this.id = id;
@@ -44,19 +27,25 @@ public class Place {
         this.name = name;
     }
 
-    public Place(long id, String name) {
-        this.id= id;
-        this.name = name;
-    }
 
-    public Place(String name) {
-        this.name = name;
-    }
+    public Place(String placeID, String name, String address, String lat, String lng, String icon) {
 
-    public Place(long id, String name, String address) {
-        this.id= id;
+        this.placeID = placeID;
         this.name = name;
         this.address = address;
+        this.lat = lat;
+        this.lng = lng;
+        this.icon=icon;
+    }
+
+    public Place(long id, String name, String address, String lat, String lng, String icon) {
+        this.id = id;
+        this.name = name;
+        this.address = address;
+        this.lat = lat;
+        this.lng = lng;
+        this.icon=icon;
+
     }
 
     public String getPlaceID() {
@@ -107,6 +96,9 @@ public class Place {
         this.image = image;
     }
 
-
     public long getId() { return id; }
+
+    public String getIcon() {
+        return icon;
+    }
 }

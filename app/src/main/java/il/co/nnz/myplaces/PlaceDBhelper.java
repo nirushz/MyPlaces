@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -21,6 +22,7 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
     public static final String LAT_KEY="lat";
     public static final String LNG_KEY="lng";
     public static final String IMAGE_KEY="image";
+    public static final String ICON_KEY="icon";
 
 
     public static final String FAVORITES_TABLE_KEY="favorites_table";
@@ -31,6 +33,7 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
     public static final String F_LAT_KEY="lat";
     public static final String F_LNG_KEY="lng";
     public static final String F_IMAGE_KEY="image";
+    public static final String F_ICON_KEY="icon";
 
 
     public PlaceDBhelper(Context context) {
@@ -45,13 +48,13 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
 
 
         String searchTable = String.format("CREATE TABLE %s ( %s INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "%s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT)",
-                SEARCH_TABLE_KEY, ID_KEY, PLACE_ID_KEY, NAME_KEY, ADDRESS_KEY, LAT_KEY, LNG_KEY, IMAGE_KEY);
+                        "%s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT)",
+                SEARCH_TABLE_KEY, ID_KEY, PLACE_ID_KEY, NAME_KEY, ADDRESS_KEY, LAT_KEY, LNG_KEY, IMAGE_KEY, ICON_KEY);
         db.execSQL(searchTable);
 
         String favoritesTable = String.format("CREATE TABLE %s ( %s INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "%s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT)",
-                FAVORITES_TABLE_KEY, F_ID_KEY, F_PLACE_ID_KEY, F_NAME_KEY, F_ADDRESS_KEY, F_LAT_KEY, F_LNG_KEY, F_IMAGE_KEY);
+                        "%s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT)",
+                FAVORITES_TABLE_KEY, F_ID_KEY, F_PLACE_ID_KEY, F_NAME_KEY, F_ADDRESS_KEY, F_LAT_KEY, F_LNG_KEY, F_IMAGE_KEY,F_ICON_KEY);
         db.execSQL(favoritesTable);
 
     }
@@ -70,6 +73,7 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
         values.put(LAT_KEY, place.getLat());
         values.put(LNG_KEY, place.getLng());
         values.put(IMAGE_KEY, place.getImage());
+        values.put(ICON_KEY, place.getIcon());
         db.insert(SEARCH_TABLE_KEY, null, values);
         db.close();
     }
@@ -86,7 +90,9 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
             String address = c.getString(c.getColumnIndex(ADDRESS_KEY));
             String lat = c.getString(c.getColumnIndex(LAT_KEY));
             String lng = c.getString(c.getColumnIndex(LNG_KEY));
-            Place temp = new Place(id, name, address, lat, lng);
+            String icon = c.getString(c.getColumnIndex(ICON_KEY));
+            Log.d("place-params-db",id+","+ name+","+address+","+lat+","+lng);
+            Place temp = new Place(id, name, address, lat, lng, icon);
             places.add(temp);
         }
         db.close();
@@ -123,13 +129,15 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
         ArrayList<Place> places = new ArrayList<>();
 
         SQLiteDatabase db = getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT "+ID_KEY+", "+NAME_KEY+", "+ADDRESS_KEY+" FROM " +FAVORITES_TABLE_KEY, null);
+        Cursor c = db.rawQuery("SELECT * FROM " +FAVORITES_TABLE_KEY, null);
         while (c.moveToNext())
         {
             long id = c.getLong(c.getColumnIndex(ID_KEY));
             String name = c.getString(c.getColumnIndex(NAME_KEY));
             String address = c.getString(c.getColumnIndex(ADDRESS_KEY));
-            Place temp = new Place(id, name, address);
+            String lat = c.getString(c.getColumnIndex(LAT_KEY));
+            String lng = c.getString(c.getColumnIndex(LNG_KEY));
+            Place temp = new Place(id, name, address, lat, lng);
             places.add(temp);
         }
         db.close();
@@ -139,6 +147,12 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
     public void deletePlace(long itemId) {
         SQLiteDatabase db = getWritableDatabase();
         db.delete(FAVORITES_TABLE_KEY, F_ID_KEY+"= "+itemId ,null);
+        db.close();
+    }
+
+    public void deleteFavorites() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(FAVORITES_TABLE_KEY, null,null);
         db.close();
     }
 }

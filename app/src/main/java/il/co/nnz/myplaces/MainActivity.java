@@ -1,11 +1,13 @@
 package il.co.nnz.myplaces;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -31,7 +33,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends AppCompatActivity implements SearchFragment.goToMapListener, SearchFragment.goToFavoritesListener, OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements SearchFragment.goToMapListener, SearchFragment.goToFavoritesListener {
 
     private PlaceDBhelper helper = new PlaceDBhelper(this);
 
@@ -50,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
-    private GoogleMap map;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +67,11 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
+
+        mViewPager.setOffscreenPageLimit(2);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setCurrentItem(1);
+
 
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
@@ -82,11 +88,12 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
         });
         */
 
+        /*
         //take the name entered in settings and Toast it
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         String name = sp.getString("edit_text", "no name");
         Toast.makeText(MainActivity.this, "Hi " + name , Toast.LENGTH_SHORT).show();
-
+        */
     }
 
 
@@ -103,15 +110,14 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
            case R.id.action_delete_last_search:
                helper.deletePlacesAroundMeTable();
                //connect adapter here - i can use the existing broadcast receiver
-
+               Intent broadcastIntent = new Intent(SearchIntentServise.ACTION_SEARCH_AROUND_ME);
+               LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
                break;
 
            case R.id.action_settings:
-               getFragmentManager().beginTransaction()
-                       .replace(R.id.container, new SettingsFragment())
-                       .addToBackStack("settings")
-                       .commit();
-               //mViewPager.setCurrentItem(R.xml.settings);
+
+               Intent setting = new Intent(MainActivity.this, SettingsActivity.class);
+               startActivity(setting);
                break;
 
            case R.id.action_exit:
@@ -123,30 +129,27 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
     }
 
 
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        map = googleMap;
-    }
-
     @Override
     public void goToFavoritesFragment(int position) {
+
         mViewPager.setCurrentItem(position);
     }
 
     @Override
     public void goToMapFragment(int position, Place place) {
-
+/*
         //map.clear();
         LatLng placeLocation = null;
         double lat =Double.parseDouble(place.getLat());
         double lng =Double.parseDouble(place.getLng());
         placeLocation = new LatLng(lat,lng) ;
 
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(placeLocation, 15));
-        map.addMarker(new MarkerOptions().position(placeLocation).title(place.getName()).alpha(0.6f));
-
+//        map.animateCamera(CameraUpdateFactory.newLatLngZoom(placeLocation, 15));
+//        map.addMarker(new MarkerOptions().position(placeLocation).title(place.getName()).alpha(0.6f));
+*/
+        Toast.makeText(this, "you get map fragment", Toast.LENGTH_SHORT).show();
         mViewPager.setCurrentItem(position);
+        ((MapFragment)mSectionsPagerAdapter.getItem(2)).goToMapFragment(position, place);
 
     }
 
@@ -192,6 +195,8 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
+        private MapFragment frag = new MapFragment();
+
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -206,9 +211,12 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
                 case 1:
                     return new SearchFragment();
                 case 2:
+                    /*
                     SupportMapFragment frag = new SupportMapFragment();
                     frag.getMapAsync(MainActivity.this);
                     return frag;
+                    */
+                    return frag; //new MapFragment();
                 default:
                     return null;
             }
@@ -233,5 +241,4 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
             return null;
         }
     }
-
 }
