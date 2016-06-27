@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -35,6 +36,7 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -137,7 +139,6 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
         name = query;
         wasSearch=true;
 
-        Toast.makeText(getContext(), "name: " + name, Toast.LENGTH_SHORT).show();
         try {
             locationManager.requestLocationUpdates(provider, 1000, 5, this);
         } catch (SecurityException e) {
@@ -336,8 +337,8 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         //getContext().getMenuInflater().inflate(R.menu.contex_menu, menu);
-        menu.add(Menu.NONE, R.id.share, Menu.NONE, "share");
-        menu.add(Menu.NONE, R.id.add_to_favorites, Menu.NONE, "add to favorites");
+        menu.add(Menu.NONE, R.id.share, Menu.NONE, "Navigate to");
+        menu.add(Menu.NONE, R.id.add_to_favorites, Menu.NONE, "Add to favorites");
 
     }
 
@@ -346,6 +347,19 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
 
         switch (item.getItemId()){
             case R.id.share:
+                /*
+                Intent sendIntent = new Intent();
+                sendIntent.setAction(Intent.ACTION_SEND);
+                sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.");
+                sendIntent.setType("text/plain");
+                startActivity(sendIntent);
+                */
+
+                String uri="geo:"+Double.parseDouble(onLongClickplace.getLat())+","+Double.parseDouble(onLongClickplace.getLng());
+                Intent shareIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
+                if (shareIntent.resolveActivity(getContext().getPackageManager()) != null) {
+                    startActivity(shareIntent);
+                }
 
                 break;
 

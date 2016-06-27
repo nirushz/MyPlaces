@@ -20,7 +20,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
  */
 public class MapFragment extends Fragment implements OnMapReadyCallback, SearchFragment.goToMapListener{
 
-    private GoogleMap myMap;
+    private static GoogleMap myMap;
 
     public MapFragment() {
         // Required empty public constructor

@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
 //        map.animateCamera(CameraUpdateFactory.newLatLngZoom(placeLocation, 15));
 //        map.addMarker(new MarkerOptions().position(placeLocation).title(place.getName()).alpha(0.6f));
 */
-        Toast.makeText(this, "you get map fragment", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "you get map fragment", Toast.LENGTH_SHORT).show();
         mViewPager.setCurrentItem(position);
         ((MapFragment)mSectionsPagerAdapter.getItem(2)).goToMapFragment(position, place);
 
