@@ -43,11 +43,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, SearchF
         myMap =googleMap;
     }
 
+    //show the place that was clicked clicked on map
     @Override
     public void goToMapFragment(int position, Place place) {
 
-        //Toast.makeText(getContext(), "you get myMap fragment", Toast.LENGTH_SHORT).show();
-        //myMap.clear();
+        myMap.clear();
         LatLng placeLocation = null;
         double lat =Double.parseDouble(place.getLat());
         double lng =Double.parseDouble(place.getLng());

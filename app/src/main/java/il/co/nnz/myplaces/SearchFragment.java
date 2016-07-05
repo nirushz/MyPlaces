@@ -25,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -37,6 +38,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -45,10 +47,10 @@ import java.util.ArrayList;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class SearchFragment extends Fragment implements View.OnClickListener, LocationListener, SearchView.OnQueryTextListener {
+public class SearchFragment extends Fragment implements View.OnClickListener, LocationListener {
 
     //interface 2> declare a variable of type OnNameListener (our interface)
-    public static goToMapListener mapListener;  //****its OK???? ***
+    public static goToMapListener mapListener;
     private goToFavoritesListener fragmentListener;
 
     final static String API_KEY = "AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w";
@@ -70,6 +72,8 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
 
     int radius;
     SharedPreferences sp;
+
+    EditText editSearch;
 
     public static final String ACTION_ADD_TO_FAVORITES = "il.co.nnz.myplaces.ACTION_ADD_TO_FAVORITES";
 
@@ -99,8 +103,11 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
         }
 
 
-        ((SearchView) v.findViewById(R.id.placeSearchView)).setIconifiedByDefault(false);
-        ((SearchView) v.findViewById(R.id.placeSearchView)).setOnQueryTextListener(this);
+       // ((SearchView) v.findViewById(R.id.placeSearchView)).setIconifiedByDefault(false);
+      //  ((SearchView) v.findViewById(R.id.placeSearchView)).setOnQueryTextListener(this);
+
+        editSearch = (EditText) v.findViewById(R.id.searchEdit);
+
 
         v.findViewById(R.id.searchAroundBtn).setOnClickListener(this);
 
@@ -126,7 +133,7 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
 
         return v;
     }
-
+/*
     @Override
     public boolean onQueryTextSubmit(String query) {
 
@@ -153,10 +160,19 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
         return false;
     }
 
-
+*/
     @Override
     public void onClick(View v) {
 
+        name = editSearch.getText().toString();
+
+        try {
+            name = URLEncoder.encode(name, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        Log.d ("edit search", name);
         wasSearch=true;
 
         try {
@@ -336,8 +352,8 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        //getContext().getMenuInflater().inflate(R.menu.contex_menu, menu);
-        menu.add(Menu.NONE, R.id.share, Menu.NONE, "Navigate to");
+        menu.add(Menu.NONE, R.id.share, Menu.NONE, R.string.share);
+        menu.add(Menu.NONE, R.id.navigate, Menu.NONE, "Navigate to place");
         menu.add(Menu.NONE, R.id.add_to_favorites, Menu.NONE, "Add to favorites");
 
     }
@@ -347,13 +363,19 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
 
         switch (item.getItemId()){
             case R.id.share:
-                /*
+
                 Intent sendIntent = new Intent();
                 sendIntent.setAction(Intent.ACTION_SEND);
-                sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.");
+                sendIntent.putExtra(Intent.EXTRA_TEXT, onLongClickplace.getName() + ",\n" + onLongClickplace.getAddress() + ",\n map: http://maps.google.com/maps?q=loc:"+Double.parseDouble(onLongClickplace.getLat())+","+Double.parseDouble(onLongClickplace.getLng()));
                 sendIntent.setType("text/plain");
                 startActivity(sendIntent);
-                */
+
+
+
+                break;
+
+            case R.id.navigate:
+
 
                 String uri="geo:"+Double.parseDouble(onLongClickplace.getLat())+","+Double.parseDouble(onLongClickplace.getLng());
                 Intent shareIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));

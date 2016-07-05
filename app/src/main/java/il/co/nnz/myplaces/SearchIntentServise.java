@@ -109,11 +109,11 @@ public class SearchIntentServise extends IntentService {
 
 
         } catch (MalformedURLException e) {
-            Toast.makeText(SearchIntentServise.this, "MalformedURLException", Toast.LENGTH_LONG).show();
+            Toast.makeText(SearchIntentServise.this, R.string.malformedurlexception, Toast.LENGTH_LONG).show();
         } catch (IOException e) {
-            Toast.makeText(SearchIntentServise.this, "IOException", Toast.LENGTH_LONG).show();
+            Toast.makeText(SearchIntentServise.this, R.string.ioexception, Toast.LENGTH_LONG).show();
         } catch (JSONException e) {
-            Toast.makeText(SearchIntentServise.this, "JSONException", Toast.LENGTH_LONG).show();
+            Toast.makeText(SearchIntentServise.this, R.string.jsonexception , Toast.LENGTH_LONG).show();
         }
     }
 }

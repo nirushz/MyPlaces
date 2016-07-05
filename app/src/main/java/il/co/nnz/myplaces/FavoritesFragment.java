@@ -15,16 +15,20 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.squareup.picasso.Callback;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 
 /**
@@ -58,14 +62,7 @@ public class FavoritesFragment extends Fragment {
 
         helper = new PlaceDBhelper(getContext());
 
-        String deleteFavorites = (sp.getString("delete_favorites_values", "no")).toString();
-        if (deleteFavorites.equals("yes")){
-            helper.deleteFavorites();
-            adapter = new FavoritesAdapter(getContext(), helper.getFavoritePlaces());
-            favoritesRecyclerView.setAdapter(adapter);
-        }
-
-        if (helper.getFavoritePlaces()!=null) {
+          if (helper.getFavoritePlaces()!=null) {
             adapter = new FavoritesAdapter(getContext(), helper.getFavoritePlaces());
             favoritesRecyclerView.setAdapter(adapter);
         }
@@ -80,6 +77,33 @@ public class FavoritesFragment extends Fragment {
 
         return v;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        /*
+        Set<String> deleteFavorites = sp.getStringSet ("delete_favorites", null);
+        if (deleteFavorites!=null && deleteFavorites.contains("yes")){
+            sp.edit().remove("delete_favorites");
+
+            helper.deleteFavorites();
+            adapter = new FavoritesAdapter(getContext(), helper.getFavoritePlaces());
+            favoritesRecyclerView.setAdapter(adapter);
+        }
+        */
+        if (sp.getBoolean("deleteFavorites",false )){
+            helper.deleteFavorites();
+            adapter = new FavoritesAdapter(getContext(), helper.getFavoritePlaces());
+            favoritesRecyclerView.setAdapter(adapter);
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putBoolean("deleteFavorites", false);
+            editor.commit();
+            Log.d("delete favorites!", String.valueOf(sp.getBoolean("deleteFavorites", false)));
+
+        }
+
+    }
+
 
     // 1> add the RecyclerView library
     // 2> create the adapter class
@@ -123,9 +147,7 @@ public class FavoritesFragment extends Fragment {
 
             // 6> define the views in the holder
             private TextView textName, textAddress, textDistane;
-            private ImageView imagePlace;
-            //PlaceDBhelper helper;
-
+            private ImageView categoryImage;
 
             // 4> add ctor
             public FavoritesViewHolder(View itemView) {
@@ -133,6 +155,7 @@ public class FavoritesFragment extends Fragment {
                 textName = (TextView) itemView.findViewById(R.id.textName);
                 textAddress = (TextView) itemView.findViewById(R.id.textAddress);
                 textDistane = (TextView) itemView.findViewById(R.id.textDistance);
+                categoryImage = (ImageView) itemView.findViewById(R.id.categoryImage);
 
                 itemView.setOnClickListener(this);
                 itemView.setOnLongClickListener(this);
@@ -142,6 +165,10 @@ public class FavoritesFragment extends Fragment {
             public void bindPlace (Place place){
                 textName.setText(place.getName());
                 textAddress.setText(place.getAddress());
+
+                Picasso.with(getContext()).load(place.getIcon()).into(categoryImage);
+
+
                 textDistane.setText("5Km");  //NEED TO FIX IT
 
             }
@@ -150,12 +177,6 @@ public class FavoritesFragment extends Fragment {
             public void onClick(View v) {
 
                 Place onClickPlace = places.get(getAdapterPosition());
-                /*
-                LatLng placeLocation = null;
-                double lat =Double.parseDouble(onClickPlace.getLat());
-                double lng =Double.parseDouble(onClickPlace.getLng());
-                placeLocation = new LatLng(lat,lng) ;
-                */
 
                 SearchFragment.mapListener.goToMapFragment(2, onClickPlace);
 

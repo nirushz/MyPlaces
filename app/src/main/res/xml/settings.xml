@@ -4,9 +4,9 @@
     <PreferenceCategory android:title="@string/action_settings" android:icon="@mipmap/ic_launcher">
 
     <EditTextPreference
-
         android:key="edit_radius"
         android:title="Enter the search radius"
+        android:numeric="integer"
         />
 
         <ListPreference
@@ -16,18 +16,12 @@
             android:title="Set radius in Km or Miles"
             />
 
-        <MultiSelectListPreference
-            android:entries="@array/delete_favorites"
-            android:entryValues="@array/delete_favorites_values"
+        <Preference
             android:key="delete_favorites"
-            android:title="Delete all favorites?"
+            android:title="Delete Favorites"
             />
 
-
     </PreferenceCategory>
-
-
-
 
 
 </PreferenceScreen>

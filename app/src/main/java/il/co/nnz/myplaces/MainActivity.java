@@ -1,8 +1,12 @@
 package il.co.nnz.myplaces;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.os.BatteryManager;
 import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -16,6 +20,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,6 +37,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements SearchFragment.goToMapListener, SearchFragment.goToFavoritesListener {
 
@@ -53,16 +60,26 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
      */
     private ViewPager mViewPager;
 
+    boolean tablet;
+    // private MapFragment tabletMap = new MapFragment();
+    //private SectionsPagerAdapterTablet tabletSectionsPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        tablet = getResources().getBoolean(R.bool.has_two_panes);
+        Log.d("isTablet", String.valueOf(tablet));
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
+
+
+        Log.d("devise", String.valueOf(tablet));
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
@@ -72,30 +89,30 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setCurrentItem(1);
 
-
-
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+        //}
 
-        /*
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        */
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = this.registerReceiver(new PowerConnectionReceiver(), ifilter);
 
-        /*
-        //take the name entered in settings and Toast it
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        String name = sp.getString("edit_text", "no name");
-        Toast.makeText(MainActivity.this, "Hi " + name , Toast.LENGTH_SHORT).show();
-        */
+        //String isTablet=getText(R.string.screen_type).toString();
+        //Log.d("isTablet", String.valueOf(isTablet));
+
     }
 
+    /*
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SharedPreferences sp =PreferenceManager.getDefaultSharedPreferences(this);
+        Set<String> deleteFavorites = sp.getStringSet ("delete_favorites", null);
+        if (deleteFavorites!=null && deleteFavorites.contains("yes")){
+            sp.edit().remove("delete_favorites");
+            helper.deleteFavorites();
+        }
+    }
+    */
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -103,27 +120,27 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+    
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-       switch (item.getItemId()){
-           case R.id.action_delete_last_search:
-               helper.deletePlacesAroundMeTable();
-               //connect adapter here - i can use the existing broadcast receiver
-               Intent broadcastIntent = new Intent(SearchIntentServise.ACTION_SEARCH_AROUND_ME);
-               LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
-               break;
+        switch (item.getItemId()) {
+            case R.id.action_delete_last_search:
+                helper.deletePlacesAroundMeTable();
+                //connect adapter here - i can use the existing broadcast receiver
+                Intent broadcastIntent = new Intent(SearchIntentServise.ACTION_SEARCH_AROUND_ME);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+                break;
 
-           case R.id.action_settings:
+            case R.id.action_settings:
+                Intent setting = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(setting);
+                break;
 
-               Intent setting = new Intent(MainActivity.this, SettingsActivity.class);
-               startActivity(setting);
-               break;
-
-           case R.id.action_exit:
-               finish();
-               break;
-       }
+            case R.id.action_exit:
+                finish();
+                break;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -137,20 +154,11 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
 
     @Override
     public void goToMapFragment(int position, Place place) {
-/*
-        //map.clear();
-        LatLng placeLocation = null;
-        double lat =Double.parseDouble(place.getLat());
-        double lng =Double.parseDouble(place.getLng());
-        placeLocation = new LatLng(lat,lng) ;
 
-//        map.animateCamera(CameraUpdateFactory.newLatLngZoom(placeLocation, 15));
-//        map.addMarker(new MarkerOptions().position(placeLocation).title(place.getName()).alpha(0.6f));
-*/
-        //Toast.makeText(this, "you get map fragment", Toast.LENGTH_SHORT).show();
-        mViewPager.setCurrentItem(position);
-        ((MapFragment)mSectionsPagerAdapter.getItem(2)).goToMapFragment(position, place);
-
+        if (tablet == false) {
+            mViewPager.setCurrentItem(position);
+        }
+        ((MapFragment) mSectionsPagerAdapter.getItem(2)).goToMapFragment(position, place);
     }
 
 
@@ -211,11 +219,6 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
                 case 1:
                     return new SearchFragment();
                 case 2:
-                    /*
-                    SupportMapFragment frag = new SupportMapFragment();
-                    frag.getMapAsync(MainActivity.this);
-                    return frag;
-                    */
                     return frag; //new MapFragment();
                 default:
                     return null;
@@ -224,7 +227,9 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
+            if (tablet){
+                return 2;
+            }
             return 3;
         }
 
@@ -241,4 +246,69 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
             return null;
         }
     }
+
+
+    public class PowerConnectionReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+            boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING;
+
+
+            if (isCharging) {
+                Toast.makeText(getApplicationContext(), "YEEH...CHARGING...", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "STOPPED CHARGING...", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+    }
 }
+/*
+        //  SectionsPagerAdapter for Tablets
+
+    public class SectionsPagerAdapterTablet extends FragmentPagerAdapter {
+
+        //private MapFragment frag = new MapFragment();
+
+        public SectionsPagerAdapterTablet(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            // getItem is called to instantiate the fragment for the given page.
+            // Return a PlaceholderFragment (defined as a static inner class below).
+            switch (position) {
+                case 0:
+                    return new FavoritesFragment();
+                case 1:
+                    return new SearchFragment();
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public int getCount() {
+            // Show 3 total pages.
+            return 2;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0:
+                    return getString(R.string.favorits);
+                case 1:
+                    return getString(R.string.search);
+            }
+            return null;
+        }
+    }
+
+
+
+}
+*/

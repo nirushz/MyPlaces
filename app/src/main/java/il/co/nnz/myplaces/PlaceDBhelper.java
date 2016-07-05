@@ -120,6 +120,7 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
         values.put(LAT_KEY, onLongClickplace.getLat());
         values.put(LNG_KEY, onLongClickplace.getLng());
         values.put(IMAGE_KEY, onLongClickplace.getImage());
+        values.put(ICON_KEY, onLongClickplace.getIcon());
         db.insert(FAVORITES_TABLE_KEY, null, values);
         db.close();
     }
@@ -137,7 +138,8 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
             String address = c.getString(c.getColumnIndex(ADDRESS_KEY));
             String lat = c.getString(c.getColumnIndex(LAT_KEY));
             String lng = c.getString(c.getColumnIndex(LNG_KEY));
-            Place temp = new Place(id, name, address, lat, lng);
+            String icon = c.getString(c.getColumnIndex(ICON_KEY));
+            Place temp = new Place(id, name, address, lat, lng, icon);
             places.add(temp);
         }
         db.close();

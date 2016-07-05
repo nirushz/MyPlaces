@@ -11,15 +11,23 @@
     <string name="map">Map</string>
     <string name="favorits">Favorits</string>
 
-    !--Search Fragment strings -->
+    <!--Search Fragment strings -->
     <string name="search_around">Search Around me</string>
     <string name="search_place">Search Place Name</string>
 
-    <string name="share">Share</string>
+    <string name="share">Share place</string>
+    <string name="navigate">navigate</string>
     <string name="add_to_favorites">Add to Favorites</string>
 
     <string name="start_searching">Searching the best places for you...</string>
 
+    <!--SearchIntentServise strings -->
+
+    <string name="malformedurlexception">The search keywod is incorrect, please check it</string>
+    <string name="ioexception">No internet connection, try again later</string>
+    <string name="jsonexception">Can not import places, try again later</string>
+
+    <!--Settings strings -->
     <string-array name="km_mile">
         <item>Km</item>
         <item>Mile</item>
