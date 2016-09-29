@@ -5,7 +5,7 @@ package il.co.nnz.myplaces;
  */
 public class Place {
 
-    private String placeID, name, address, lat, lng, icon;
+    private String placeID, name, address, lat, lng, icon, phone, website;
     private int image;
     private long id;
 
@@ -45,7 +45,42 @@ public class Place {
         this.lat = lat;
         this.lng = lng;
         this.icon=icon;
+    }
 
+    public Place(String placeID, String name, String address, String lat, String lng, String icon, String phone, String website) {
+
+        this.placeID = placeID;
+        this.name = name;
+        this.address = address;
+        this.lat = lat;
+        this.lng = lng;
+        this.icon=icon;
+        this.phone=phone;
+        this.website=website;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getPlaceID() {

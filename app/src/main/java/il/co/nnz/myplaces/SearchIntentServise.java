@@ -59,8 +59,37 @@ public class SearchIntentServise extends IntentService {
                     String placeID = place.getString("place_id");
                     Log.d("place ID: ", placeID);
 
-                    //get phone from here:
-                    //https://maps.googleapis.com/maps/api/place/details/json?placeid=ChIJs32SQXq6AhURLB2X0KBrt-Q&key=AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w
+                    //***********************************************
+
+                        URL thisPlaceUrl = new URL("https://maps.googleapis.com/maps/api/place/details/json?placeid="+placeID+"&key=AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w");
+                    Log.d("secondUrl", String.valueOf(thisPlaceUrl));
+                        HttpURLConnection connection1 = (HttpURLConnection) thisPlaceUrl.openConnection();
+                        InputStream stream1 = connection1.getInputStream();
+                        InputStreamReader reader1 = new InputStreamReader(stream1);
+                        BufferedReader bufferedReader1 = new BufferedReader(reader1);
+
+                        String result1 = "", line1;
+
+                        while ((line1 = bufferedReader1.readLine()) != null) {
+                            result1 += line1;
+                        }
+                    Log.d("secondJSON: ", result1);
+
+                        JSONObject thisPlace = new JSONObject(result1);
+                        JSONObject thisPlaceResult =thisPlace.getJSONObject("result");
+
+                        String phone=null, website=null;
+                        if(thisPlaceResult.has("international_phone_number")) {
+                            phone = thisPlaceResult.getString("international_phone_number");
+                            Log.d("phone: ", phone);
+                        }
+                    if (thisPlaceResult.has("website")){
+                        website = thisPlaceResult.getString("website");
+                        Log.d ("website", website);
+                    }
+
+
+                    //***********************************************
 
                     String name = place.getString("name");
                     Log.d("place name: ", name);
@@ -91,8 +120,8 @@ public class SearchIntentServise extends IntentService {
 
                     //insertion to DB, if not locality type
                     if (!locality.equals("locality")) {
-                        Log.d("place-params", placeID + "," + name + "," + address + "," + lat + "," + lng+","+ icon);
-                        Place temp = new Place(placeID, name, address, lat, lng, icon);
+                        Log.d("place-params", placeID + "," + name + "," + address + "," + lat + "," + lng+","+ icon+","+ phone+","+ website);
+                        Place temp = new Place(placeID, name, address, lat, lng, icon, phone, website);
                         helper.insertPlace(temp);
                     }
 
@@ -113,7 +142,9 @@ public class SearchIntentServise extends IntentService {
         } catch (IOException e) {
             Toast.makeText(SearchIntentServise.this, R.string.ioexception, Toast.LENGTH_LONG).show();
         } catch (JSONException e) {
-            Toast.makeText(SearchIntentServise.this, R.string.jsonexception , Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.jsonexception , Toast.LENGTH_LONG).show();
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
 }

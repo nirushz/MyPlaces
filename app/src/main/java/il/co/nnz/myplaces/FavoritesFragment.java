@@ -178,7 +178,7 @@ public class FavoritesFragment extends Fragment {
 
                 Place onClickPlace = places.get(getAdapterPosition());
 
-                SearchFragment.mapListener.goToMapFragment(2, onClickPlace);
+                SearchFragment.mapListener.goToMapFragment(2, onClickPlace, 0);
 
             }
 

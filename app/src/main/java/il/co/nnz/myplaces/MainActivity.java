@@ -93,8 +93,8 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
         tabLayout.setupWithViewPager(mViewPager);
         //}
 
-        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        Intent batteryStatus = this.registerReceiver(new PowerConnectionReceiver(), ifilter);
+      //  IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+      //  Intent batteryStatus = this.registerReceiver(new PowerConnectionReceiver(), ifilter);
 
         //String isTablet=getText(R.string.screen_type).toString();
         //Log.d("isTablet", String.valueOf(isTablet));
@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
-    
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -153,12 +153,12 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.go
     }
 
     @Override
-    public void goToMapFragment(int position, Place place) {
+    public void goToMapFragment(int position, Place place, int cameFromFragment) {
 
         if (tablet == false) {
             mViewPager.setCurrentItem(position);
         }
-        ((MapFragment) mSectionsPagerAdapter.getItem(2)).goToMapFragment(position, place);
+        ((MapFragment) mSectionsPagerAdapter.getItem(2)).goToMapFragment(position, place, cameFromFragment);
     }
 
 

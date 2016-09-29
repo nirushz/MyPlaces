@@ -23,6 +23,8 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
     public static final String LNG_KEY="lng";
     public static final String IMAGE_KEY="image";
     public static final String ICON_KEY="icon";
+    public static final String PHONE_KEY="phone";
+    public static final String WEBSITE_KEY="website";
 
 
     public static final String FAVORITES_TABLE_KEY="favorites_table";
@@ -34,9 +36,12 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
     public static final String F_LNG_KEY="lng";
     public static final String F_IMAGE_KEY="image";
     public static final String F_ICON_KEY="icon";
+    public static final String F_PHONE_KEY="phone";
+    public static final String F_WEBSITE_KEY="website";
 
 
     public PlaceDBhelper(Context context) {
+
         super(context, "placesDB.db", null, 1);
     }
 
@@ -48,8 +53,8 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
 
 
         String searchTable = String.format("CREATE TABLE %s ( %s INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "%s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT)",
-                SEARCH_TABLE_KEY, ID_KEY, PLACE_ID_KEY, NAME_KEY, ADDRESS_KEY, LAT_KEY, LNG_KEY, IMAGE_KEY, ICON_KEY);
+                        "%s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT)",
+                SEARCH_TABLE_KEY, ID_KEY, PLACE_ID_KEY, NAME_KEY, ADDRESS_KEY, LAT_KEY, LNG_KEY, IMAGE_KEY, ICON_KEY, PHONE_KEY, WEBSITE_KEY);
         db.execSQL(searchTable);
 
         String favoritesTable = String.format("CREATE TABLE %s ( %s INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -74,6 +79,8 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
         values.put(LNG_KEY, place.getLng());
         values.put(IMAGE_KEY, place.getImage());
         values.put(ICON_KEY, place.getIcon());
+        values.put(PHONE_KEY, place.getPhone());
+        values.put(WEBSITE_KEY, place.getWebsite());
         db.insert(SEARCH_TABLE_KEY, null, values);
         db.close();
     }
@@ -156,5 +163,22 @@ public class PlaceDBhelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         db.delete(FAVORITES_TABLE_KEY, null,null);
         db.close();
+    }
+
+
+    //------------------------
+    // map fragment methots
+    //------------------------
+
+
+
+    public void getMoreDetails(Place place) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM " + SEARCH_TABLE_KEY + " WHERE " + ID_KEY + "=" +place.getId(), null);
+        c.moveToNext();
+        if(c != null && c.moveToFirst()) {
+            place.setPhone(c.getString(c.getColumnIndex(PHONE_KEY)));
+            place.setWebsite(c.getString(c.getColumnIndex(WEBSITE_KEY)));
+        }
     }
 }

@@ -102,10 +102,6 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
             searchPlacesRecyclerView.setAdapter(adapter);
         }
 
-
-       // ((SearchView) v.findViewById(R.id.placeSearchView)).setIconifiedByDefault(false);
-      //  ((SearchView) v.findViewById(R.id.placeSearchView)).setOnQueryTextListener(this);
-
         editSearch = (EditText) v.findViewById(R.id.searchEdit);
 
 
@@ -202,9 +198,9 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
         if (wasSearch) {
 
             if (name == null) {
-                myPlaceUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + mylat + "," + mylng + "&radius=" + radius + "&key=AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w";
+                myPlaceUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + mylat + "," + mylng + "&radius=" + radius + "&key=AIzaSyDOGTQd-WQUludiZ5P7wt8upx08R_2mjiU";
             } else {
-                myPlaceUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + mylat + "," + mylng + "&radius=" + radius + "&name=" + name + "&key=AIzaSyC-VJcttQOPCyqtGqck1MysH84Qe3Va37w";
+                myPlaceUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + mylat + "," + mylng + "&radius=" + radius + "&name=" + name + "&key=AIzaSyDOGTQd-WQUludiZ5P7wt8upx08R_2mjiU";
             }
             Log.d("myOwnPlace Url: ", myPlaceUrl);
             Intent in = new Intent(getContext(), SearchIntentServise.class);
@@ -324,18 +320,9 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
             public void onClick(View v) {
 
                 Place onClickPlace = places.get(getAdapterPosition());
-                /*
-                LatLng placeLocation = null;
-                double lat =Double.parseDouble(onClickPlace.getLat());
-                double lng =Double.parseDouble(onClickPlace.getLng());
-                placeLocation = new LatLng(lat,lng) ;
-                */
-
 
                 //interface 4> run the method
-                mapListener.goToMapFragment(2, onClickPlace);
-
-
+                mapListener.goToMapFragment(2, onClickPlace, 1);
 
             }
 
@@ -369,21 +356,17 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
                 sendIntent.putExtra(Intent.EXTRA_TEXT, onLongClickplace.getName() + ",\n" + onLongClickplace.getAddress() + ",\n map: http://maps.google.com/maps?q=loc:"+Double.parseDouble(onLongClickplace.getLat())+","+Double.parseDouble(onLongClickplace.getLng()));
                 sendIntent.setType("text/plain");
                 startActivity(sendIntent);
-
-
-
                 break;
 
+
             case R.id.navigate:
-
-
                 String uri="geo:"+Double.parseDouble(onLongClickplace.getLat())+","+Double.parseDouble(onLongClickplace.getLng());
                 Intent shareIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
                 if (shareIntent.resolveActivity(getContext().getPackageManager()) != null) {
                     startActivity(shareIntent);
                 }
-
                 break;
+
 
             case R.id.add_to_favorites:
 
@@ -402,7 +385,7 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Lo
 
     //interface 1> create an interface with the method/s
     public interface goToMapListener{
-       void goToMapFragment (int position, Place place);
+       void goToMapFragment (int position, Place place, int cameFromFragment);
 
     }
 
